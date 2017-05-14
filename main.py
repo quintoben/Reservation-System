@@ -35,32 +35,6 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 # [END imports]
 
-DEFAULT_USER_NAME = 'default_user'
-DEFAULT_RESOURCE_NAME = 'default_resource'
-DEFAULT_RESERVATION_NAME = 'default_reservation'
-
-
-
-def user_key(user_name=DEFAULT_USER_NAME):
-    """Constructs a Datastore key for a User entity.
-
-    We use user_name as the key.
-    """
-    return ndb.Key('User', user_name)
-
-def resource_key(resource_name=DEFAULT_RESOURCE_NAME):
-    """Constructs a Datastore key for a Resource entity.
-
-    We use resource_name as the key.
-    """
-    return ndb.Key('Resource', resource_name)
-
-def reservation_key(reservation_name=DEFAULT_RESERVATION_NAME):
-    """Constructs a Datastore key for a Reservation entity.
-
-    We use reservation_name as the key.
-    """
-    return ndb.Key('Reservation', reservation_name)
 
 # def validate_date(d):
 #     try:
@@ -72,22 +46,20 @@ def reservation_key(reservation_name=DEFAULT_RESERVATION_NAME):
 #[User Model]
 class User(ndb.Model):
     identity = ndb.StringProperty()
+    name = ndb.StringProperty()
     
 #[Resource Model]
 class Resource(ndb.Model):
-    identity = ndb.StringProperty()
     name = ndb.StringProperty()
     tag = ndb.StringProperty(repeated=True,indexed=False)
     start = ndb.DateTimeProperty(indexed=False)
     end = ndb.DateTimeProperty(indexed=False);
-    available = ndb.DateTimeProperty(repeated=True,indexed=False)
     last_made = ndb.DateTimeProperty(auto_now_add=True)
     owner = ndb.StringProperty()
     duration = ndb.StringProperty()
 
 #[Reservation Model]
 class Reservation(ndb.Model):
-    identity = ndb.StringProperty()
     name = ndb.StringProperty();
     start = ndb.DateTimeProperty()
     end = ndb.DateTimeProperty();
@@ -100,8 +72,6 @@ class Reservation(ndb.Model):
         return cls.query(ancestor=ancestor_key).order(-cls.date)
     
 
-
-
 # [START main_page]
 class MainPage(webapp2.RequestHandler):
     
@@ -111,14 +81,23 @@ class MainPage(webapp2.RequestHandler):
         if user:
             url = users.create_logout_url(self.request.uri)
             url_linktext = 'Logout'
+            user_info = User()
+            user_info.identity = user.user_id()
+            user_info.name = user.email()
+            user_info.put()
         else:
             url = users.create_login_url(self.request.uri)
             url_linktext = 'Login'
         
         #get the user's reservation
+        now = datetime.datetime.now()
         reservation_query = Reservation.query(Reservation.userId == user.user_id()).order(-Reservation.made)
 #         reservation_query = Reservation.query().order(-Reservation.made)
-
+        result = []
+        for res in reservation_query:
+            if res.end > now:
+                result.append(res)
+        
         
         #get all the resources in the system
         all_resource_query = Resource.query().order(-Resource.last_made)
@@ -128,7 +107,7 @@ class MainPage(webapp2.RequestHandler):
         
         template_values = {
             'user': user,
-            'reservation_list': reservation_query,
+            'reservation_list': result,
 #             'reservation_id': urllib.quote_plus(reservation_id),
             'all_resource_list': all_resource_query,
             'own_resource_list': own_resource_query,
@@ -151,22 +130,57 @@ class CreateReservation(webapp2.RequestHandler):
         reservation.name = self.request.get('name')
         start_time = self.request.get('start_time')
         start_date_processing = start_time.replace('T', '-').replace(':', '-').split('-')
-        start_date_processing = [int(v) for v in start_date_processing]
-        start_date_out = datetime.datetime(*start_date_processing)
-        reservation.start = start_date_out
+        valid_start = True
+        for v in start_date_processing:
+            if v == '':
+                valid_start = False
+        if valid_start == True:
+            start_date_processing = [int(v) for v in start_date_processing]
+            start_date_out = datetime.datetime(*start_date_processing)
+            reservation.start = start_date_out
+        
+        
         
         #get end time
         end_time = self.request.get('end_time')
         end_date_processing = end_time.replace('T', '-').replace(':', '-').split('-')
-        end_date_processing = [int(v) for v in end_date_processing]
-        end_date_out = datetime.datetime(*end_date_processing)
-        reservation.end = end_date_out
-                
+        valid_end = True
+        for v in end_date_processing:
+            if v == '':
+                valid_end = False
         
-        #store the data to ndb
-        reservation.put()
-        time.sleep(0.1)
-        self.redirect('/')
+        if valid_end == True:
+            end_date_processing = [int(v) for v in end_date_processing]
+            end_date_out = datetime.datetime(*end_date_processing)
+            reservation.end = end_date_out
+        
+        if valid_start and valid_end:
+        
+            resource = Resource.query(reservation.name == Resource.name).get()
+            
+            if reservation.start < resource.start or reservation.end > resource.end:
+                self.redirect('/error?error=the time you choose is invalid')
+            
+            else:
+                exsit_reservation = Reservation.query(reservation.name == Reservation.name)
+                valid = True
+                for res in exsit_reservation:
+                    if res.start < reservation.start and res.end > reservation.start:
+                        valid = False
+                    if res.start < reservation.end and res.end > reservation.end:
+                        valid = False
+                if valid == False:
+                    self.redirect('/error?error=the time you choose overlay with other reservation')
+                else:
+                    #store the data to ndb
+                    duration = reservation.end - reservation.start
+                    reservation.duration = str(duration)
+                    reservation.put()
+                    time.sleep(0.1)
+                    self.redirect('/')
+        
+        else:
+            self.redirect('/error?error=the time you choose is invalid')
             
     
 
@@ -295,6 +309,12 @@ class ShowResource(webapp2.RequestHandler):
         now = datetime.datetime.now()
         reservation_query = Reservation.query(Reservation.name == resource_name)
         query = reservation_query.filter(Reservation.end > now)
+        
+        dict = {}
+        for res in query:
+            user_info =  User.query(res.userId == User.identity).get()
+            dict[res.userId] = user_info.name
+        
         user = users.get_current_user()
         if user:
             url = users.create_logout_url(self.request.uri)
@@ -309,8 +329,8 @@ class ShowResource(webapp2.RequestHandler):
             'url': url,
             'url_linktext': url_linktext,
             'resource': resource_query,
-            'reservation_list':query
-            
+            'reservation_list': query,
+            'user_info': dict
         }
         
         if user.user_id() == resource_query.owner:

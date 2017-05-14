@@ -10,19 +10,24 @@
 <h1>{{ resource.name }}</h1>
 <a href="/rss?name={{ resource.name }}">RSS</a>
 <p>
-	{{ resource.start }}
-	{{ resource.end }}
-	{{ resource.duration }}
+	start: {{ resource.start }}<br>
+	end: {{ resource.end }}<br>
+	duration: {{ resource.duration }}<br>
 </p>
 <div>
-Current and Upcoming Reservation:
-{% for reservation in reservation_list %}
-	<p>{{ reservation.start }} ~ {{ reservation.end }}</p>
-{% endfor %}
+	<h3>Current and Upcoming Reservation:</h3>
+	{% for reservation in reservation_list %}
+		<p>
+		user email: {{user_info[reservation.userId]}}<br>
+		start: {{ reservation.start }}<br>
+		end: {{ reservation.end }}<br>
+		duration: {{ reservation.duration }}<br>
+		</p>
+	{% endfor %}
 </div>
 <hr>
 <div>
-Make your Reservation:
+	<h3>Make your Reservation:</h3>
         <form method="post" action="/create_reservation?name={{resource.name}}">
           <label for="start">Choose Start Time:</label>
           <input type="datetime-local" name="start_time"><br />
@@ -35,8 +40,8 @@ Make your Reservation:
 <hr>
 <div>
 {% if own %}
-Edit:
-<form method="post" action="/update_resource">
+	<h3>Edit:</h3>
+	<form method="post" action="/update_resource">
           <label for="name">Name:</label>
           <input type="text" name="name" value= {{resource.name}} ><br />
           <label for="start">Available Start Time:</label>
@@ -49,6 +54,6 @@ Edit:
         </form>
 {% endif %}
 </div>
-<a href="#" onclick="history.back();">Back</a>
+	<a href="#" onclick="history.back();">Back</a>
 </body>
 </html>
