@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+  <head>
+    <!-- [START css] -->
+    <link type="text/css" rel="stylesheet" href="/bootstrap/css/bootstrap.css">
+    <link type="text/css" rel="stylesheet" href="/bootstrap/css/bootstrap-responsive.css">
+    <!-- [END css] -->
+    <style type="text/css">
+      body {
+        padding-top: 40px;
+        padding-bottom: 40px;
+        background-color: #f5f5f5;
+      }
+      blockquote {
+        margin-bottom: 10px;
+        border-left-color: #bbb;
+      }
+      form {
+        margin-top: 10px;
+      }
+      .form-signin input[type="text"] {
+        font-size: 16px;
+        height: auto;
+        margin-bottom: 15px;
+        padding: 7px 9px;
+      }
+      .row {
+        margin-left: 0px;
+        margin-top: 10px;
+        overflow: scroll;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="#">My Reservation</a>
+          <div class="nav-collapse collapse pull-right">
+            <a href="{{ url|safe }}" class="btn">{{ url_linktext }}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <!-- [START reservation_list] -->
+      My Reservation:
+      {% for reservation in reservation_list %}
+      <div class="row">
+        <blockquote>{{ reservation.name }}</blockquote>
+        <blockquote>{{ reservation.start }}</blockquote>
+        <blockquote>{{ reservation.end }}</blockquote>
+      </div>
+      {% endfor %}
+      <!-- [END reservation_list] -->
+    </div>
+    <hr>
+    <div class="container">
+      <!-- [START all_resource_list] -->
+      All Resource in System:
+      {% for all_resource in all_resource_list %}
+      <div class="row">
+        <a href ="/resource?resource={{ all_resource.name }}">{{ all_resource.name }}</a>
+        <blockquote>{{ all_resource.start }}</blockquote>
+        <blockquote>{{ all_resource.end }}</blockquote>
+
+        	{% for tag in all_resource.tag %}
+        	<a href="/tag?tag={{ tag }}">{{ tag }}</a>
+        	{% endfor %}
+
+      </div>
+      {% endfor %}
+      <!-- [END all_resource_list] -->
+    </div>
+    <hr>
+    <div class="container">
+      <!-- [START own_resource_list] -->
+      Resource you own:
+      {% for own_resource in own_resource_list %}
+      <div class="row">
+        <blockquote>{{ own_resource.name }}</blockquote>
+        <blockquote>{{ own_resource.start }}</blockquote>
+        <blockquote>{{ own_resource.end }}</blockquote>
+      </div>
+      {% endfor %}
+      <!-- [END own_resource_list] -->
+    </div>
+    <hr>
+    <div>
+    	<a href="/create?{{ user }}">create a new resource</a>
+    </div>
+    
+
+  </body>
+</html>
+{% endautoescape %}

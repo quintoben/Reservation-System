@@ -1,0 +1,14 @@
+indexes:
+- kind: Greeting
+  ancestor: yes
+  properties:
+  - name: date
+    direction: desc
+    
+- kind: Reservation
+  ancestor: yes
+  properties:
+  - name: userId
+  - name: date
+    direction: desc
+ 

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link type="text/css" rel="stylesheet" href="/bootstrap/css/bootstrap.css">
+    <link type="text/css" rel="stylesheet" href="/bootstrap/css/bootstrap-responsive.css">
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<h1>{{ resource.name }}</h1>
+<div>
+Current and Upcoming Reservation:
+{% for reservation in reservation_list %}
+	<p>{{ reservation.start }} ~ {{ reservation.end }}</p>
+{% endfor %}
+</div>
+<hr>
+<div>
+Make your Reservation:
+        <form method="post" action="/create_reservation?name={{resource.name}}">
+          <label for="start">Choose Start Time:</label>
+          <input type="datetime-local" name="start_time"><br />
+          <label for="end">Choose End Time:</label>
+          <input type="datetime-local" name="end_time"><br />
+		  
+          <input type="submit">
+        </form>
+</div>
+<hr>
+<div>
+{% if own %}
+Edit:
+<form method="post" action="/update_resource">
+          <label for="name">Name:</label>
+          <input type="text" name="name" value= {{resource.name}} ><br />
+          <label for="start">Available Start Time:</label>
+          <input type="datetime-local" name="start_time" value={{start}}><br />
+          <label for="end">Available End Time:</label>
+          <input type="datetime-local" name="end_time" value={{end}}><br />
+          <label for="tags">Tags(Please use ";" to separate):</label>
+          <input type="text" name="tags" value= {{tag}}><br />
+          <input type="submit">
+        </form>
+{% endif %}
+</div>
+</body>
+</html>

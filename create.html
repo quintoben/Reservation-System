@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Create a resource</title>
+   <link rel="stylesheet" type="text/css" href="bootstrap/css/style.css">
+  </head>
+  <body>
+    <div id="container">
+      <div class="pagetitle">
+        <h1>Create a resource</h1>
+      </div>
+      <div id="main">
+        <form method="post" action="/create_resource">
+          <label for="name">Name:</label>
+          <input type="text" name="name"><br />
+          <label for="start">Available Start Time:</label>
+          <input type="datetime-local" name="start_time"><br />
+          <label for="end">Available End Time:</label>
+          <input type="datetime-local" name="end_time"><br />
+          <label for="tags">Tags(Please use ";" to separate):</label>
+          <input type="text" name="tags"><br />
+          <input type="submit">
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
