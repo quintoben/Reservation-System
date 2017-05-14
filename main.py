@@ -19,6 +19,7 @@ import os
 import urllib
 import datetime
 
+
 from google.appengine.api import users
 from google.appengine.ext import ndb
 
@@ -26,6 +27,7 @@ import jinja2
 import webapp2
 import time
 from itertools import repeat
+
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -60,6 +62,13 @@ def reservation_key(reservation_name=DEFAULT_RESERVATION_NAME):
     """
     return ndb.Key('Reservation', reservation_name)
 
+# def validate_date(d):
+#     try:
+#         datetime.strptime(d, '%Y-%M-%D %H:%M:%S')
+#         return True
+#     except ValueError:
+#         return False
+
 #[User Model]
 class User(ndb.Model):
     identity = ndb.StringProperty()
@@ -73,17 +82,19 @@ class Resource(ndb.Model):
     end = ndb.DateTimeProperty(indexed=False);
     available = ndb.DateTimeProperty(repeated=True,indexed=False)
     last_made = ndb.DateTimeProperty(auto_now_add=True)
-    owner =ndb.StringProperty()
+    owner = ndb.StringProperty()
+    duration = ndb.StringProperty()
 
 #[Reservation Model]
 class Reservation(ndb.Model):
     identity = ndb.StringProperty()
     name = ndb.StringProperty();
     start = ndb.DateTimeProperty()
-    end = ndb.DateTimeProperty(indexed=False);
+    end = ndb.DateTimeProperty();
     userId = ndb.StringProperty()
     resource = ndb.StructuredProperty(Resource,indexed=False)
     made = ndb.DateTimeProperty(auto_now_add=True);
+    duration = ndb.StringProperty()
     @classmethod
     def query_reservation(cls, ancestor_key):
         return cls.query(ancestor=ancestor_key).order(-cls.date)
@@ -185,32 +196,65 @@ class CreateResource(webapp2.RequestHandler):
         
         
         resource = Resource()
+        error = ''
         user = users.get_current_user()
         if user:
             resource.owner = user.user_id()
         #get start time
         resource.name = self.request.get('name')
+        if resource.name == '':
+            error = 'please enter the resource name'
+        
         start_time = self.request.get('start_time')
         start_date_processing = start_time.replace('T', '-').replace(':', '-').split('-')
-        start_date_processing = [int(v) for v in start_date_processing]
-        start_date_out = datetime.datetime(*start_date_processing)
-        resource.start = start_date_out
+        valid_start = True
+        for v in start_date_processing:
+            if v == '':
+                valid_start = False
+        if valid_start==True:
+            start_date_processing = [int(v) for v in start_date_processing]
+            start_date_out = datetime.datetime(*start_date_processing)
+            resource.start = start_date_out
+#             if validate_date(start_date_out) == False:
+#                 error = 'please enter the correct resource start time'
+        else:
+            error = 'please enter the correct resource start time'
         
         #get end time
         end_time = self.request.get('end_time')
         end_date_processing = end_time.replace('T', '-').replace(':', '-').split('-')
-        end_date_processing = [int(v) for v in end_date_processing]
-        end_date_out = datetime.datetime(*end_date_processing)
-        resource.end = end_date_out
+        
+        valid_end = True
+        for v in end_date_processing:
+            if v=='':
+                valid_end = False
+        if valid_end==True:
+            end_date_processing = [int(v) for v in end_date_processing]
+            end_date_out = datetime.datetime(*end_date_processing)
+            resource.end = end_date_out
+#             if validate_date(end_date_out) == False:
+#                 error = 'please enter the correct resource end time'
+        else:
+            error = 'please enter the correct resource end time'
+        
 
         tags = str(self.request.get('tags'))
         tag_list = tags.split(";")
         resource.tag = tag_list
         
-        #store the data to ndb
-        resource.put()
-        time.sleep(0.1)
-        self.redirect('/')
+        if valid_start and valid_end:
+            duration = end_date_out - start_date_out
+            if end_date_out < start_date_out:
+                error = 'resource\'s end date is later than start day'
+        if error != '':
+            self.redirect('/error?error='+error)
+        else:
+            resource.duration = str(duration)
+        
+            #store the data to ndb
+            resource.put()
+            time.sleep(0.1)
+            self.redirect('/')
 
 class ShowResourceFilterByTag(webapp2.RequestHandler):
     
@@ -248,8 +292,9 @@ class ShowResource(webapp2.RequestHandler):
     def get(self):
         resource_name = self.request.get('resource')
         resource_query = Resource.query(resource_name == Resource.name).get()
-        reservation_query = Reservation.query(Reservation.name == resource_name).order(Reservation.start)
-        
+        now = datetime.datetime.now()
+        reservation_query = Reservation.query(Reservation.name == resource_name)
+        query = reservation_query.filter(Reservation.end > now)
         user = users.get_current_user()
         if user:
             url = users.create_logout_url(self.request.uri)
@@ -264,7 +309,7 @@ class ShowResource(webapp2.RequestHandler):
             'url': url,
             'url_linktext': url_linktext,
             'resource': resource_query,
-            'reservation_list':reservation_query
+            'reservation_list':query
             
         }
         
@@ -291,34 +336,95 @@ class UpdateResource(webapp2.RequestHandler):
     def post(self):
 
         user = users.get_current_user()
+        error = ''
         
         #get start time
         resource_name = self.request.get('name')
+        
         resource = Resource.query(resource_name == Resource.name).get()
         resource.name = resource_name
+        if resource.name == '':
+            error = 'please enter the resource name'
+        
         start_time = self.request.get('start_time')
         start_date_processing = start_time.replace('T', '-').replace(':', '-').split('-')
-        start_date_processing = [int(v) for v in start_date_processing]
-        start_date_out = datetime.datetime(*start_date_processing)
-        resource.start = start_date_out
+        valid_start = True
+        for v in start_date_processing:
+            if v == '':
+                valid_start = False
+        if valid_start==True:
+            start_date_processing = [int(v) for v in start_date_processing]
+            start_date_out = datetime.datetime(*start_date_processing)
+            resource.start = start_date_out
+            
+        else:
+            error = 'please enter the correct resource start time'
         
         #get end time
         end_time = self.request.get('end_time')
         end_date_processing = end_time.replace('T', '-').replace(':', '-').split('-')
-        end_date_processing = [int(v) for v in end_date_processing]
-        end_date_out = datetime.datetime(*end_date_processing)
-        resource.end = end_date_out
+        valid_end = True
+        for v in end_date_processing:
+            if v=='':
+                valid_end = False
+        if valid_end==True:
+            end_date_processing = [int(v) for v in end_date_processing]
+            end_date_out = datetime.datetime(*end_date_processing)
+            resource.end = end_date_out
+        else:
+            error = 'please enter the correct resource end time'
 
         tags = str(self.request.get('tags'))
         tag_list = tags.split(";")
         resource.tag = tag_list
         
-        if user:
-            resource.owner = user.user_id()
-        #store the data to ndb
-        resource.put()
+        if valid_start and valid_end:
+            duration = end_date_out - start_date_out
+            if end_date_out < start_date_out:
+                error = 'resource\'s end date is later than start day'
+        if error != '':
+            self.redirect('/error?error='+error)
+        else:
+            if user:
+                resource.owner = user.user_id()
+            #store the data to ndb
+            resource.duration = str(duration)
+            resource.put()
+            time.sleep(0.1)
+            self.redirect('/')
+        
+class Delete(webapp2.RequestHandler):
+    
+    def get(self):
+        reservation_key = ndb.Key(urlsafe=self.request.get('name'))
+        reservation = Reservation.query(reservation_key == Reservation.key).get()
+        reservation.key.delete()
         time.sleep(0.1)
         self.redirect('/')
+
+class RSS(webapp2.RequestHandler):
+    
+    def get(self):
+        resource_name = self.request.get('name')
+        resource_query = Resource.query(resource_name == Resource.name).get()
+        reservation_query = Reservation.query(Reservation.name == resource_name)
+        template_values = {
+            'resource': resource_query,
+            'reservation_list': reservation_query
+        }
+        self.response.headers['Content-Type'] = 'application/rss+xml'
+        template = JINJA_ENVIRONMENT.get_template('rss.xml')
+        self.response.write(template.render(template_values))
+        
+class Error(webapp2.RequestHandler):
+    
+    def get(self):
+        error = self.request.get('error')
+        template_values = {
+            'error': error
+        }
+        template = JINJA_ENVIRONMENT.get_template('error.html')
+        self.response.write(template.render(template_values))
 
 # [START app]
 app = webapp2.WSGIApplication([
@@ -329,5 +435,8 @@ app = webapp2.WSGIApplication([
     ('/resource',ShowResource),
     ('/update_resource',UpdateResource),
     ('/create_reservation',CreateReservation),
+    ('/delete',Delete),
+    ('/rss',RSS),
+    ('/error',Error),
 ], debug=True)
 # [END app]

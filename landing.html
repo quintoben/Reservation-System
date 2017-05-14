@@ -53,9 +53,10 @@
       My Reservation:
       {% for reservation in reservation_list %}
       <div class="row">
-        <blockquote>{{ reservation.name }}</blockquote>
-        <blockquote>{{ reservation.start }}</blockquote>
-        <blockquote>{{ reservation.end }}</blockquote>
+        {{ reservation.name }}
+        {{ reservation.start }}
+        {{ reservation.end }}
+        <a href = "/delete?name={{reservation.key.urlsafe()}}">Delete</a>
       </div>
       {% endfor %}
       <!-- [END reservation_list] -->
@@ -84,9 +85,12 @@
       Resource you own:
       {% for own_resource in own_resource_list %}
       <div class="row">
-        <blockquote>{{ own_resource.name }}</blockquote>
+        <a href = "/resource?resource={{ own_resource.name }}">{{ own_resource.name }}</a>
         <blockquote>{{ own_resource.start }}</blockquote>
         <blockquote>{{ own_resource.end }}</blockquote>
+        	{% for tag in own_resource.tag %}
+        	<a href="/tag?tag={{ tag }}">{{ tag }}</a>
+        	{% endfor %}
       </div>
       {% endfor %}
       <!-- [END own_resource_list] -->

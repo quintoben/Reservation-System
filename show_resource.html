@@ -8,6 +8,12 @@
 </head>
 <body>
 <h1>{{ resource.name }}</h1>
+<a href="/rss?name={{ resource.name }}">RSS</a>
+<p>
+	{{ resource.start }}
+	{{ resource.end }}
+	{{ resource.duration }}
+</p>
 <div>
 Current and Upcoming Reservation:
 {% for reservation in reservation_list %}
@@ -43,5 +49,6 @@ Edit:
         </form>
 {% endif %}
 </div>
+<a href="#" onclick="history.back();">Back</a>
 </body>
 </html>
