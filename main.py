@@ -428,19 +428,19 @@ class Delete(webapp2.RequestHandler):
         time.sleep(0.1)
         self.redirect('/')
 
-class RSS(webapp2.RequestHandler):
-    
-    def get(self):
-        resource_name = self.request.get('name')
-        resource_query = Resource.query(resource_name == Resource.name).get()
-        reservation_query = Reservation.query(Reservation.name == resource_name)
-        template_values = {
-            'resource': resource_query,
-            'reservation_list': reservation_query
-        }
-        self.response.headers['Content-Type'] = 'application/rss+xml'
-        template = JINJA_ENVIRONMENT.get_template('rss.xml')
-        self.response.write(template.render(template_values))
+# class RSS(webapp2.RequestHandler):
+#     
+#     def get(self):
+#         resource_name = self.request.get('name')
+#         resource_query = Resource.query(resource_name == Resource.name).get()
+#         reservation_query = Reservation.query(Reservation.name == resource_name)
+#         template_values = {
+#             'resource': resource_query,
+#             'reservation_list': reservation_query
+#         }
+#         self.response.headers['Content-Type'] = 'application/rss+xml'
+#         template = JINJA_ENVIRONMENT.get_template('rss.xml')
+#         self.response.write(template.render(template_values))
         
 class Error(webapp2.RequestHandler):
     
@@ -462,7 +462,7 @@ app = webapp2.WSGIApplication([
     ('/update_resource',UpdateResource),
     ('/create_reservation',CreateReservation),
     ('/delete',Delete),
-    ('/rss',RSS),
+#     ('/rss',RSS),
     ('/error',Error),
 ], debug=True)
 # [END app]
