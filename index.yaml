@@ -1,14 +1,28 @@
-indexes:
-- kind: Greeting
+indexes: 
+- kind: Resource
   ancestor: yes
   properties:
-  - name: date
-    direction: desc
-    
+  - name: name
+  - name: tag
+  - name: start
+  - name: end
+  - name: last_made
+  - name: owner
+  - name: duration
+  - name: num 
+ 
 - kind: Reservation
   ancestor: yes
   properties:
   - name: userId
-  - name: date
-    direction: desc
- 
+  - name: name
+  - name: start
+  - name: end
+  - name: made
+  - name: duration 
+    
+- kind: User
+  ancestor: yes
+  properties:
+  - name: identity
+  - name: name

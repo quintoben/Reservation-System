@@ -1,16 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<link type="text/css" rel="stylesheet" href="/bootstrap/css/bootstrap.css">
+    <link type="text/css" rel="stylesheet" href="/bootstrap/css/bootstrap-responsive.css">
 <meta charset="UTF-8">
-<title>Insert title here</title>
+<title>resource filter by tag</title>
 </head>
 <body>
-<h1>{{ tag_name }}
-</h1>
-<div>
+<div class="container">
+	<h1>{{ tag_name }}</h1>
+</div>
+<hr>
+<div class="container">
 	{% for res in resource_list %}
-       	<p>{{ res.name }}</p>
+       	<p>
+       		<a href="/resource?resource={{ res.name }}">{{ res.name }}</a>
+       	</p>
     {% endfor %}
+</div>
+<hr>
+<div class="container">
+	<a href="#" onclick="history.back();">Back</a>
 </div>
 </body>
 </html>

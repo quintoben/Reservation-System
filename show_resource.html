@@ -7,16 +7,31 @@
 <title>Insert title here</title>
 </head>
 <body>
-<h1>{{ resource.name }}</h1>
-<div>
-Current and Upcoming Reservation:
-{% for reservation in reservation_list %}
-	<p>{{ reservation.start }} ~ {{ reservation.end }}</p>
-{% endfor %}
+<div class="container">
+	<h1>{{ resource.name }}</h1>
+	<a href="/rss?name={{ resource.name }}">RSS</a>
+	<p>
+		start: {{ resource.start }}<br>
+		end: {{ resource.end }}<br>
+		duration: {{ resource.duration }}<br>
+		reservsed time: {{ resource.num }}<br>
+	</p>
 </div>
 <hr>
-<div>
-Make your Reservation:
+<div class="container">
+	<h3>Current and Upcoming Reservation:</h3>
+	{% for reservation in reservation_list %}
+		<p>
+		user email: {{user_info[reservation.userId]}}<br>
+		start: {{ reservation.start }}<br>
+		end: {{ reservation.end }}<br>
+		duration: {{ reservation.duration }}<br>
+		</p>
+	{% endfor %}
+</div>
+<hr>
+<div class="container">
+	<h3>Make your Reservation:</h3>
         <form method="post" action="/create_reservation?name={{resource.name}}">
           <label for="start">Choose Start Time:</label>
           <input type="datetime-local" name="start_time"><br />
@@ -27,10 +42,10 @@ Make your Reservation:
         </form>
 </div>
 <hr>
-<div>
+<div class="container">
 {% if own %}
-Edit:
-<form method="post" action="/update_resource">
+	<h3>Edit:</h3>
+	<form method="post" action="/update_resource">
           <label for="name">Name:</label>
           <input type="text" name="name" value= {{resource.name}} ><br />
           <label for="start">Available Start Time:</label>
@@ -41,7 +56,11 @@ Edit:
           <input type="text" name="tags" value= {{tag}}><br />
           <input type="submit">
         </form>
+        <hr>
 {% endif %}
+</div>
+<div class="container">
+	<a href="#" onclick="history.back();">Back</a>
 </div>
 </body>
 </html>
