@@ -1,4 +1,15 @@
 indexes: 
+- kind: Reservation
+  properties:
+  - name: userId
+  - name: made
+    direction: desc
+
+- kind: Reservation
+  properties:
+  - name: name
+  - name: end
+  
 - kind: Resource
   ancestor: yes
   properties:
@@ -7,19 +18,10 @@ indexes:
   - name: start
   - name: end
   - name: last_made
+    direction: desc
   - name: owner
   - name: duration
   - name: num 
- 
-- kind: Reservation
-  ancestor: yes
-  properties:
-  - name: userId
-  - name: name
-  - name: start
-  - name: end
-  - name: made
-  - name: duration 
     
 - kind: User
   ancestor: yes
