@@ -50,12 +50,14 @@
     </div>
     <div class="container">
       <!-- [START reservation_list] -->
-      My Reservation:
+      <h3>My Reservation:</h3>
       {% for reservation in reservation_list %}
       <div class="row">
-        <blockquote>{{ reservation.name }}</blockquote>
-        <blockquote>{{ reservation.start }}</blockquote>
-        <blockquote>{{ reservation.end }}</blockquote>
+        <a href ="/resource?resource={{ reservation.name }}">{{ reservation.name }}</a><br>
+        start: {{ reservation.start }}<br>
+        end :{{ reservation.end }}<br>
+        duration: {{ reservation.duration }}<br>
+        <a href = "/delete?name={{reservation.key.urlsafe()}}">Delete</a>
       </div>
       {% endfor %}
       <!-- [END reservation_list] -->
@@ -63,13 +65,14 @@
     <hr>
     <div class="container">
       <!-- [START all_resource_list] -->
-      All Resource in System:
+      <h3>All Resource in System:</h3>
       {% for all_resource in all_resource_list %}
       <div class="row">
-        <a href ="/resource?resource={{ all_resource.name }}">{{ all_resource.name }}</a>
-        <blockquote>{{ all_resource.start }}</blockquote>
-        <blockquote>{{ all_resource.end }}</blockquote>
-
+        <a href ="/resource?resource={{ all_resource.name }}">{{ all_resource.name }}</a><br>
+        start: {{ all_resource.start }}<br>
+        end: {{ all_resource.end }}<br>
+        duration: {{ all_resource.duration }}<br>
+		tags: 
         	{% for tag in all_resource.tag %}
         	<a href="/tag?tag={{ tag }}">{{ tag }}</a>
         	{% endfor %}
@@ -81,18 +84,23 @@
     <hr>
     <div class="container">
       <!-- [START own_resource_list] -->
-      Resource you own:
+      <h3>Resource you own:</h3>
       {% for own_resource in own_resource_list %}
       <div class="row">
-        <blockquote>{{ own_resource.name }}</blockquote>
-        <blockquote>{{ own_resource.start }}</blockquote>
-        <blockquote>{{ own_resource.end }}</blockquote>
+        <a href = "/resource?resource={{ own_resource.name }}">{{ own_resource.name }}</a><br>
+        start: {{ own_resource.start }}<br>
+        end: {{ own_resource.end }}<br>
+        duration: {{ own_resource.duration }}<br>
+        tags: 
+        	{% for tag in own_resource.tag %}
+        	<a href="/tag?tag={{ tag }}">{{ tag }}</a>
+        	{% endfor %}
       </div>
       {% endfor %}
       <!-- [END own_resource_list] -->
     </div>
     <hr>
-    <div>
+    <div class="container">
     	<a href="/create?{{ user }}">create a new resource</a>
     </div>
     
