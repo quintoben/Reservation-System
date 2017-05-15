@@ -45,7 +45,7 @@
 <div class="container">
 {% if own %}
 	<h3>Edit:</h3>
-	<form method="post" action="/update_resource">
+	<form method="post" action="/update_resource?resource_name={{resource.name}}">
           <label for="name">Name:</label>
           <input type="text" name="name" value= {{resource.name}} ><br />
           <label for="start">Available Start Time:</label>

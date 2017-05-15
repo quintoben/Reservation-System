@@ -3,12 +3,12 @@
 
 <channel>
   <title>{{resource.name}}</title>
-  <link>http://reserve-166123.appspot.com</link>
+  <link>http://reservation-167701.appspot.com</link>
   <description>reservation of {{resource.name}}</description>
   {% for reservation in reservation_list %}
   <item>
     <title>reservation</title>
-    <link>http://reserve-166123.appspot.com</link>
+    <link>http://reservation-167701.appspot.com</link>
     <description>{{reservation.start}} ~ {{reservation.end}}</description>
   </item>
   {% endfor %}

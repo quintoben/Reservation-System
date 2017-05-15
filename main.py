@@ -362,10 +362,11 @@ class UpdateResource(webapp2.RequestHandler):
         error = ''
         
         #get start time
-        resource_name = self.request.get('name')
+        resource_name = self.request.get('resource_name')
+        new_name = self.request.get('name')
         
         resource = Resource.query(resource_name == Resource.name).get()
-        resource.name = resource_name
+        resource.name = new_name
         if resource.name == '':
             error = 'please enter the resource name'
         
