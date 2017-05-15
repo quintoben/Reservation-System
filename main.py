@@ -57,6 +57,7 @@ class Resource(ndb.Model):
     last_made = ndb.DateTimeProperty(auto_now_add=True)
     owner = ndb.StringProperty()
     duration = ndb.StringProperty()
+    num = ndb.IntegerProperty()
 
 #[Reservation Model]
 class Reservation(ndb.Model):
@@ -64,7 +65,6 @@ class Reservation(ndb.Model):
     start = ndb.DateTimeProperty()
     end = ndb.DateTimeProperty();
     userId = ndb.StringProperty()
-    resource = ndb.StructuredProperty(Resource,indexed=False)
     made = ndb.DateTimeProperty(auto_now_add=True);
     duration = ndb.StringProperty()
     @classmethod
@@ -176,6 +176,8 @@ class CreateReservation(webapp2.RequestHandler):
                     duration = reservation.end - reservation.start
                     reservation.duration = str(duration)
                     reservation.put()
+                    resource.num = resource.num + 1
+                    resource.put()
                     time.sleep(0.1)
                     self.redirect('/')
         
@@ -207,7 +209,6 @@ class CreatePage(webapp2.RequestHandler):
 class CreateResource(webapp2.RequestHandler):
     
     def post(self):
-        
         
         resource = Resource()
         error = ''
@@ -264,9 +265,11 @@ class CreateResource(webapp2.RequestHandler):
             self.redirect('/error?error='+error)
         else:
             resource.duration = str(duration)
+            resource.num = 0
         
             #store the data to ndb
             resource.put()
+            
             time.sleep(0.1)
             self.redirect('/')
 
@@ -419,6 +422,9 @@ class Delete(webapp2.RequestHandler):
         reservation_key = ndb.Key(urlsafe=self.request.get('name'))
         reservation = Reservation.query(reservation_key == Reservation.key).get()
         reservation.key.delete()
+        resource = Resource.query(reservation.name == Resource.name).get()
+        resource.num = resource.num - 1
+        resource.put()
         time.sleep(0.1)
         self.redirect('/')
 
